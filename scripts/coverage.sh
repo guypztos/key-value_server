@@ -35,14 +35,40 @@ llvm-cov report "$TEST_BINARY" \
   --ignore-filename-regex="$IGNORE_REGEX"
 
 step "Uncovered lines"
-# `llvm-cov show` prints "line|count|source". A count of 0 is a line that never ran.
-uncovered=$(llvm-cov show "$TEST_BINARY" \
+# The lcov export has one "SF:<file>" record per source file, followed by one
+# "DA:<line>,<count>" record per executable line. A count of 0 is a line that never ran.
+# The awk program prints those lines as file:first-last ranges.
+uncovered=$(llvm-cov export "$TEST_BINARY" \
   --instr-profile="$MERGED_PROFILE" \
   --ignore-filename-regex="$IGNORE_REGEX" \
-  --show-line-counts \
-  | awk -F'|' '
-      /^\/.*:$/ { file = $0; next }
-      $2 ~ /^ *0$/ { printf "%s%s|%s\n", file, $1, $3 }
+  --format=lcov \
+  | awk -v root="$PWD/" '
+      function print_range() {
+        if (first != "") {
+          printf "%s:%s\n", file, (first == last ? first : first "-" last)
+          first = ""
+        }
+      }
+      /^SF:/ {
+        print_range()
+        file = substr($0, 4)
+        sub("^" root, "", file)
+      }
+      /^DA:/ {
+        split(substr($0, 4), record, ",")
+        line = record[1]
+        count = record[2]
+        if (count != 0 || (first != "" && line != last + 1)) {
+          print_range()
+        }
+        if (count == 0) {
+          if (first == "") {
+            first = line
+          }
+          last = line
+        }
+      }
+      END { print_range() }
     ')
 if [ -z "$uncovered" ]; then
   echo "none"
