@@ -184,22 +184,26 @@ The quality gates need a working toolchain before any server code exists.
   macOS privacy protection blocks the Docker VM from `~/Documents`, and this route is the
   same as what CI does. Rejected alternatives: granting Terminal Full Disk Access (unverified
   on this machine) and moving the project out of Documents.
-- Dev container image: Ubuntu LTS, clang, CMake, clang-format, clang-tidy, llvm-cov, redis-tools.
+- Dev container image: Ubuntu 26.04 LTS with clang, clang-format, clang-tidy and llvm-cov 21,
+  CMake 4.2, Ninja 1.13, GoogleTest 1.17 and redis-tools 8.0. LLVM is pinned by major
+  version in the package names; the rest are fixed by the Ubuntu release. `make check`
+  prints the exact versions it ran with.
 - `git init`, connected to the existing public GitHub repository
   (https://github.com/guypztos/key-value_server).
 - CMake project with build types for debug, ASan+UBSan, release and coverage.
 - `.clang-format`, `.clang-tidy`, GoogleTest wired in, one trivial passing test.
-- `make check` runs all six gates; GitHub Actions runs it on every push.
+- `make check` runs gates 1-5 and GitHub Actions runs it on every push. Gate 6, coverage,
+  is a separate `make coverage` so that `make check` stays fast (owner's decision, 2026-11-23).
 - CLAUDE.md "Commands" section filled in.
 
-Proposed commit order (not yet approved by the owner):
+Commit order (approved by the owner on 2026-11-23):
 
 1. `git init`, `.gitignore`, first commit of CLAUDE.md and SPEC.md, push. The repository is
    public, so confirm the git author name and email with the owner before the first push.
 2. Dockerfile for the toolchain.
 3. CMake skeleton with the four build types and one trivial passing test.
 4. `.clang-format` and `.clang-tidy`.
-5. Makefile where `make check` runs all six gates in the container.
+5. Makefile where `make check` runs gates 1-5 in the container, and `make coverage` runs gate 6.
 6. GitHub Actions workflow running the same `make check`.
 7. CLAUDE.md "Commands" filled in; README stub.
 

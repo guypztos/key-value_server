@@ -58,12 +58,26 @@ All gates must be runnable with one command (e.g. `make check`) and run in CI on
 - Errors from system calls are always checked and reported with errno context.
 
 ## Commands
-Update this section as soon as the real commands exist.
-- Build:
-- Test:
-- Run server:
-- Open dev container:
+Run these on the Mac from the repo root. Each one copies the current source into the dev
+container image and does its work inside a container. Docker must be running (`colima start`).
+- Build and test, gates 1-5: `make check`
+  (clang-format check, -Werror build with clang-tidy, all tests under ASan and UBSan).
+- Coverage, gate 6: `make coverage` (report only; not part of `make check`).
+- Apply formatting to the source files: `make format`
+- One test by name, after a `make check`: `./scripts/dev.sh ctest --preset check -R <name>`
+- Any other command in the container: `./scripts/dev.sh <command...>`
+- Open dev container: `make shell`
+- Rebuild the image showing progress: `make image`. Start from scratch: `make clean`.
+- Run server: not available yet (milestone 1).
+
+A Claude Code Stop hook (`.claude/settings.json`) runs `make check` whenever Claude tries
+to end a turn and blocks the turn from ending while it fails.
+
+The container keeps the synced source and the build tree in a Docker named volume
+(`kv-work`). Named volumes are fine; mounting the host folder is what does not work.
 
 ## Current status
-Spec written (SPEC.md). Docker installed. Milestone 0 not started: its commit plan is
-proposed in SPEC.md section 7 and still needs the owner's approval.
+Milestone 0 (toolchain and CI) built on 2026-11-23: dev container, CMake skeleton with one
+trivial source file and test, `make check`, `make coverage`, GitHub Actions workflow, Stop
+hook. Pinned tool versions are in SPEC.md section 7. No server code exists yet.
+Next: milestone 1, which needs a plan and the owner's approval before any code.
