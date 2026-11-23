@@ -1,0 +1,18 @@
+# Runs the same `make check` as a developer runs locally: it builds the dev container
+# from the Dockerfile and runs every quality gate inside it.
+name: check
+
+on: push
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    # The runner only hosts Docker; the toolchain comes from the Dockerfile.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Quality gates (make check)
+        run: make check
