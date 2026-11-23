@@ -1,0 +1,11 @@
+# Build trees (inside the container these live in a Docker volume, not on the host)
+build/
+
+# macOS
+.DS_Store
+
+# Personal Claude Code overrides; .claude/settings.json is shared and committed
+.claude/settings.local.json
+
+# Server data files (milestone 3 onwards)
+*.aof
