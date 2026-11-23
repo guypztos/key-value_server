@@ -1,0 +1,6 @@
+# Keep the copied source layer small and stable: none of these affect a build.
+.git
+.github
+.claude
+build
+.DS_Store
